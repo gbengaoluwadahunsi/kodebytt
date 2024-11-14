@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { SunIcon, MoonIcon } from '@heroicons/react/24/solid'
 
 interface HeaderProps {
   theme: string
@@ -28,10 +29,11 @@ export default function Header({ theme, toggleTheme, resetAppState }: HeaderProp
             Kodebytt
           </h1>
         </Link>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center ">
           <Switch id="theme-switch" onCheckedChange={toggleTheme} />
-          <Label htmlFor="theme-switch" className="text-white">
-            {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+        
+          <Label htmlFor="theme-switch" className="ml-2 text-white">
+            {theme === 'dark' ?  <div  className='flex gap-1 justify-center items-center cursor-pointer'><MoonIcon className="w-6 h-6 text-yellow-600 cursor-pointer" /> <span>Dark Mode</span> </div> :<div className='flex gap-1 justify-center items-center cursor-pointer'><SunIcon className="w-6 h-6 text-yellow-300 cursor-pointer" /> <span>Light Mode</span> </div>}
           </Label>
         </div>
       </div>

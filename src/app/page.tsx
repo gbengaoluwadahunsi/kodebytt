@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '@/components/ui/ThemeContext'
 import { useToast } from "@/hooks/use-toast"
 import LandingPage from '@/components/ui/LandingPage'
@@ -20,6 +20,19 @@ export default function Home() {
   const { theme, toggleTheme } = useTheme()
   const { toast } = useToast()
 
+  const fetchConcepts = useCallback(async () => {
+    const queryString = selectedTopics.map(topic => `choice=${encodeURIComponent(topic)}`).join('&')
+    try {
+      const response = await fetch(`/api/concepts?${queryString}`)
+      if (response.ok) {
+        const data = await response.json()
+        setConcepts(data)
+      }
+    } catch (error) {
+      console.error('Error fetching concepts:', error)
+    }
+  }, [selectedTopics])
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
@@ -35,7 +48,7 @@ export default function Home() {
     } else {
       setConcepts([])
     }
-  }, [selectedTopics, isLoggedIn])
+  }, [selectedTopics, isLoggedIn, fetchConcepts])
 
   const fetchUserTopics = async (token: string) => {
     try {
@@ -50,19 +63,6 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error fetching user topics:', error)
-    }
-  }
-
-  const fetchConcepts = async () => {
-    const queryString = selectedTopics.map(topic => `choice=${encodeURIComponent(topic)}`).join('&')
-    try {
-      const response = await fetch(`/api/concepts?${queryString}`)
-      if (response.ok) {
-        const data = await response.json()
-        setConcepts(data)
-      }
-    } catch (error) {
-      console.error('Error fetching concepts:', error)
     }
   }
 
@@ -168,4 +168,4 @@ export default function Home() {
       <Footer />
     </div>
   )
-} 
+}
