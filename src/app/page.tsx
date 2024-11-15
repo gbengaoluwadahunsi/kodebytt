@@ -47,24 +47,7 @@ export default function Home() {
     }
   }, [selectedTopics, toast])
 
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      setIsLoggedIn(true)
-      setShowLanding(false)
-      fetchUserTopics(token)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (selectedTopics.length > 0 && isLoggedIn) {
-      fetchConcepts()
-    } else {
-      setConcepts([])
-    }
-  }, [selectedTopics, isLoggedIn, fetchConcepts])
-
-  const fetchUserTopics = async (token: string) => {
+  const fetchUserTopics = useCallback(async (token: string) => {
     try {
       const response = await fetch(`${API_URL}/api/user/topics`, {
         headers: {
@@ -85,7 +68,24 @@ export default function Home() {
         variant: "destructive",
       })
     }
-  }
+  }, [toast, setSelectedTopics])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      setIsLoggedIn(true)
+      setShowLanding(false)
+      fetchUserTopics(token)
+    }
+  }, [fetchUserTopics])
+
+  useEffect(() => {
+    if (selectedTopics.length > 0 && isLoggedIn) {
+      fetchConcepts()
+    } else {
+      setConcepts([])
+    }
+  }, [selectedTopics, isLoggedIn, fetchConcepts])
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,11 +116,11 @@ export default function Home() {
         const data = await response.json()
         throw new Error(data.error)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(isLogin ? 'Login error:' : 'Registration error:', error)
       toast({
         title: isLogin ? "Login failed" : "Registration failed",
-        description: error.message || "An unexpected error occurred.",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
         variant: "destructive",
       })
     }
