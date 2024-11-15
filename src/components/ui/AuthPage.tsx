@@ -16,7 +16,7 @@ interface AuthPageProps {
   setSelectedTopics: (topics: string[]) => void // Function to update selected topics
 }
 
-const topics = ['Next.js', 'React', 'React Native', 'JavaScript', 'TypeScript', 'AWS CDK', 'Python', 'Django', 'Flask']
+const topics = ['Next.js', 'React', 'Expressjs', 'Nodejs', 'React Native', 'JavaScript', 'TypeScript', 'AWS CDK', 'Python', 'Django', 'Flask']
 
 export default function AuthPage({
   isLogin,
