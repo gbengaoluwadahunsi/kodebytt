@@ -17,6 +17,8 @@ export default function MainContent({
   concepts,
   handleLogout
 }: MainContentProps) {
+  
+  // Function to toggle topic selection
   const toggleTopic = (topic: string) => {
     setSelectedTopics(
       selectedTopics.includes(topic)
@@ -60,6 +62,7 @@ export default function MainContent({
           ))}
         </div>
       </div>
+
       {concepts.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {concepts.map((concept, index) => (

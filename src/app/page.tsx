@@ -9,6 +9,8 @@ import MainContent from '@/components/ui/MainContent'
 import Header from '@/components/ui/Header'
 import Footer from '@/components/ui/Footer'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 export default function Home() {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
   const [concepts, setConcepts] = useState<Array<{ topic: string, concept: string }>>([])
@@ -21,17 +23,29 @@ export default function Home() {
   const { toast } = useToast()
 
   const fetchConcepts = useCallback(async () => {
+    if (selectedTopics.length === 0) return;
     const queryString = selectedTopics.map(topic => `choice=${encodeURIComponent(topic)}`).join('&')
     try {
-      const response = await fetch(`/api/concepts?${queryString}`)
+      const response = await fetch(`${API_URL}/api/concepts?${queryString}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
       if (response.ok) {
         const data = await response.json()
         setConcepts(data)
+      } else {
+        throw new Error('Failed to fetch concepts')
       }
     } catch (error) {
       console.error('Error fetching concepts:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch concepts. Please try again.",
+        variant: "destructive",
+      })
     }
-  }, [selectedTopics])
+  }, [selectedTopics, toast])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -52,7 +66,7 @@ export default function Home() {
 
   const fetchUserTopics = async (token: string) => {
     try {
-      const response = await fetch('/api/user/topics', {
+      const response = await fetch(`${API_URL}/api/user/topics`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -60,9 +74,16 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json()
         setSelectedTopics(data.topics)
+      } else {
+        throw new Error('Failed to fetch user topics')
       }
     } catch (error) {
       console.error('Error fetching user topics:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch your topics. Please try logging in again.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -70,17 +91,17 @@ export default function Home() {
     e.preventDefault()
     const endpoint = isLogin ? '/api/login' : '/api/register'
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, topics: selectedTopics })
       })
       if (response.ok) {
         const data = await response.json()
         if (isLogin) {
           localStorage.setItem('token', data.token)
           setIsLoggedIn(true)
-          fetchUserTopics(data.token)
+          setSelectedTopics(data.topics)
           setShowLanding(false)
         } else {
           setIsLogin(true)
@@ -93,17 +114,13 @@ export default function Home() {
         setPassword('')
       } else {
         const data = await response.json()
-        toast({
-          title: isLogin ? "Login failed" : "Registration failed",
-          description: data.error,
-          variant: "destructive",
-        })
+        throw new Error(data.error)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(isLogin ? 'Login error:' : 'Registration error:', error)
       toast({
         title: isLogin ? "Login failed" : "Registration failed",
-        description: "An unexpected error occurred.",
+        description: error.message || "An unexpected error occurred.",
         variant: "destructive",
       })
     }
@@ -162,6 +179,8 @@ export default function Home() {
             password={password}
             setPassword={setPassword}
             toggleAuthMode={toggleAuthMode}
+            selectedTopics={selectedTopics}
+            setSelectedTopics={setSelectedTopics}
           />
         )}
       </main>
